@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_listview/models/rick_morty.dart';
 import 'package:flutter_listview/repos/rick_morty_repo.dart';
 import 'package:flutter_listview/widgets/character_card.dart';
@@ -8,9 +9,12 @@ class CharactersPage extends StatefulWidget {
   _CharactersPageState createState() => _CharactersPageState();
 }
 
-class _CharactersPageState extends State<CharactersPage> {
+class _CharactersPageState 
+  extends State<CharactersPage>
+  with SingleTickerProviderStateMixin {
 
   ScrollController controller;
+  AnimationController _hide;
 
   List<Character> characters = [];
   int page = 0;
@@ -23,11 +27,16 @@ class _CharactersPageState extends State<CharactersPage> {
     super.initState();
     fetchData();
     controller = ScrollController()..addListener(_scrollListener);
+    _hide = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 100)
+    );
   }
 
   @override
   void dispose() {
     controller.dispose();
+    _hide.dispose();
     super.dispose();
   }
 
@@ -59,36 +68,54 @@ class _CharactersPageState extends State<CharactersPage> {
     }
   }
 
+  bool _onNotificationHandler(ScrollNotification notification) {
+    if (notification.depth == 0 && notification is UserScrollNotification) {
+      if (notification.direction == ScrollDirection.forward) {
+        _hide.reverse();
+      } else if (notification.direction == ScrollDirection.reverse) {
+        _hide.forward();
+      }
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Rick and Morty"),
       ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.keyboard_arrow_up),
-        onPressed: () {
-          controller.animateTo(
-            controller.initialScrollOffset, 
-            duration: Duration(milliseconds: 500), 
-            curve: Curves.easeIn);
-        },
+      floatingActionButton: ScaleTransition(
+        scale: _hide,
+        child: FloatingActionButton(
+          child: Icon(Icons.keyboard_arrow_up),
+          onPressed: () {
+            controller.animateTo(
+              controller.initialScrollOffset, 
+              duration: Duration(milliseconds: 500), 
+              curve: Curves.easeIn);
+          },
+        ),
       ),
       body: isLoading 
       ? Center(child: CircularProgressIndicator(),) 
-      : ListView.builder(
-          controller: controller,
-          itemCount: characters.length + 1,
-          itemBuilder: (BuildContext context, int index) {
-            if (index == characters.length) {
-              if (hasMorePages) {
-                return CharacterCard(loading: true,);
+      : NotificationListener<ScrollNotification>(
+        onNotification: _onNotificationHandler,
+        child: 
+          ListView.builder(
+              controller: controller,
+              itemCount: characters.length + 1,
+              itemBuilder: (BuildContext context, int index) {
+                if (index == characters.length) {
+                  if (hasMorePages) {
+                    return CharacterCard(loading: true,);
+                  }
+                  return Container();
+                }
+                return CharacterCard(character: characters[index],);
               }
-              return Container();
-            }
-            return CharacterCard(character: characters[index],);
-          }
-        ),
+            ),
+      )
     );
   }
 }
