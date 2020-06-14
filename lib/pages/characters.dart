@@ -10,14 +10,25 @@ class CharactersPage extends StatefulWidget {
 
 class _CharactersPageState extends State<CharactersPage> {
 
+  ScrollController controller;
+
   List<Character> characters = [];
   int page = 0;
   bool isLoading = false;
+  bool hasMorePages = false;
+  bool isLoadingMore = false;
 
   @override
   void initState() {
     super.initState();
     fetchData();
+    controller = ScrollController()..addListener(_scrollListener);
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   void fetchData() {
@@ -28,9 +39,24 @@ class _CharactersPageState extends State<CharactersPage> {
       page++;
       setState(() {
         isLoading = false;
+        isLoadingMore = false;
         characters.addAll(res.results);
+        hasMorePages = page < res.info.pages;
       });
     });
+  }
+
+  void _scrollListener() {
+    if (controller.offset >= controller.position.maxScrollExtent) {
+      print("Reached end");
+      if (!isLoadingMore && hasMorePages) {
+        print("Fetching");
+        setState(() {
+          isLoadingMore = true;
+        });
+        fetchData();
+      }
+    }
   }
 
   @override
@@ -42,8 +68,15 @@ class _CharactersPageState extends State<CharactersPage> {
       body: isLoading 
       ? Center(child: CircularProgressIndicator(),) 
       : ListView.builder(
-          itemCount: characters.length,
+          controller: controller,
+          itemCount: characters.length + 1,
           itemBuilder: (BuildContext context, int index) {
+            if (index == characters.length) {
+              if (hasMorePages) {
+                return CharacterCard(loading: true,);
+              }
+              return Container();
+            }
             return CharacterCard(character: characters[index],);
           }
         ),
