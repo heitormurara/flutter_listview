@@ -65,6 +65,15 @@ class _CharactersPageState extends State<CharactersPage> {
       appBar: AppBar(
         title: Text("Rick and Morty"),
       ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.keyboard_arrow_up),
+        onPressed: () {
+          controller.animateTo(
+            controller.initialScrollOffset, 
+            duration: Duration(milliseconds: 500), 
+            curve: Curves.easeIn);
+        },
+      ),
       body: isLoading 
       ? Center(child: CircularProgressIndicator(),) 
       : ListView.builder(
