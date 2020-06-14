@@ -16,45 +16,78 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+
+  ScrollController scrollController;
+  final itemHeight = 80.0;
+
+  @override
+  void initState() {
+    super.initState();
+    scrollController = ScrollController();
+    scrollController.addListener(_scrollListener);
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollListener() {
+    if (scrollController.offset >= scrollController.position.maxScrollExtent && !scrollController.position.outOfRange) {
+      print("End reached");
+    } else if (scrollController.offset <= scrollController.position.minScrollExtent && !scrollController.position.outOfRange) {
+      print("At the top");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('ListView Demo'),
       ),
-      body: ListView.separated (
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            child: Icon(Icons.keyboard_arrow_up),
+            onPressed: () {
+              scrollController.animateTo(
+                scrollController.offset - itemHeight, 
+                duration: Duration(milliseconds: 500), 
+                curve: Curves.easeIn,
+              );
+            },
+          ),
+          SizedBox(height: 8,),
+          FloatingActionButton(
+            child: Icon(Icons.keyboard_arrow_down),
+            onPressed: () {
+              scrollController.animateTo(
+                scrollController.offset + itemHeight, 
+                duration: Duration(milliseconds: 500), 
+                curve: Curves.easeIn,
+              );
+            },
+          ),
+        ],
+      ),
+      body: ListView.builder(
+        controller: scrollController,
+        itemExtent: itemHeight,
         itemCount: 50,
         itemBuilder: (BuildContext context, int index) {
           return ListTile(
-            title: Text('$index'),
+            title: Text('Item $index'),
           );
-        },
-        separatorBuilder: (BuildContext context, int index) {
-          if (index % 5 == 0 && index != 0) return _buildAndBanner();
-          return Divider(thickness: 1,);
-        },
-      )
-    );
-  }
-
-  Widget _buildAndBanner() {
-    return Card(
-      color: Colors.grey,
-      child: Container(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget> [
-            Text('Sponsored'),
-            SizedBox(height: 16),
-            Container(
-              height: 100,
-              color: Colors.white,
-            )
-          ],
-        ),
-      ),
+        })
     );
   }
 }
