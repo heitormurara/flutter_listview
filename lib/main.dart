@@ -31,9 +31,30 @@ class HomePage extends StatelessWidget {
           );
         },
         separatorBuilder: (BuildContext context, int index) {
+          if (index % 5 == 0 && index != 0) return _buildAndBanner();
           return Divider(thickness: 1,);
         },
       )
+    );
+  }
+
+  Widget _buildAndBanner() {
+    return Card(
+      color: Colors.grey,
+      child: Container(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget> [
+            Text('Sponsored'),
+            SizedBox(height: 16),
+            Container(
+              height: 100,
+              color: Colors.white,
+            )
+          ],
+        ),
+      ),
     );
   }
 }
