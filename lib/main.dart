@@ -23,25 +23,16 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: Text('ListView Demo'),
       ),
-      body: ListView(
-        padding: EdgeInsets.all(8),
-        children: <Widget> [
-          ListTile(
-            title: Text('Account'),
-            leading: Icon(Icons.person),
-            trailing: Icon(Icons.keyboard_arrow_right),
-          ),
-          ListTile(
-            title: Text('Display'),
-            leading: Icon(Icons.screen_lock_portrait),
-            trailing: Icon(Icons.keyboard_arrow_right),
-          ),
-          ListTile(
-            title: Text('Apps'),
-            leading: Icon(Icons.apps),
-            trailing: Icon(Icons.keyboard_arrow_right),
-          ),
-        ],
+      body: ListView.separated (
+        itemCount: 50,
+        itemBuilder: (BuildContext context, int index) {
+          return ListTile(
+            title: Text('$index'),
+          );
+        },
+        separatorBuilder: (BuildContext context, int index) {
+          return Divider(thickness: 1,);
+        },
       )
     );
   }
