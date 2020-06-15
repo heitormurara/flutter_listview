@@ -23,8 +23,20 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
   }
 
   void removeName(int index) {
-    names.removeAt(index);
-    setState(() {});
+    String name = names.removeAt(index);
+    _animatedListKey.currentState.removeItem(index, (context, animation) {
+      return SizeTransition(
+        sizeFactor: animation,
+        child: _buildItem(name),
+      );
+    },
+    duration: Duration(milliseconds: 700)
+    );
+    if (names.isEmpty) {
+      Future.delayed(Duration(milliseconds: 800), () {
+        setState(() {});
+      });
+    }
   }
 
   @override
@@ -60,7 +72,7 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
     );
   }
 
-  Widget _buildItem(String name, int index) {
+  Widget _buildItem(String name, [int index]) {
     return Card(
       elevation: 3,
       child: ListTile(
