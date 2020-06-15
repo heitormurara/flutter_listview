@@ -8,6 +8,7 @@ class SuggestionsPage extends StatefulWidget {
 class _SuggestionsPageState extends State<SuggestionsPage> {
   final _textController = TextEditingController();
   List<String> names = ['James Haywire', 'Fela Kuti'];
+  final GlobalKey<AnimatedListState> _animatedListKey = GlobalKey<AnimatedListState>();
 
   @override
   void dispose() {
@@ -18,6 +19,7 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
   void insertName(String value) {
     names.insert(0, value);
     setState(() {});
+    _animatedListKey.currentState.insertItem(0, duration: Duration(milliseconds: 1000));
   }
 
   void removeName(int index) {
@@ -41,10 +43,14 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
                 )
               : Container(),
           Expanded(
-            child: ListView.builder(
-              itemCount: names.length,
-              itemBuilder: (BuildContext context, int index) {
-                return _buildItem(names[index], index);
+            child: AnimatedList(
+              key: _animatedListKey,
+              initialItemCount: names.length,
+              itemBuilder: (BuildContext context, int index, Animation animation) {
+                return SizeTransition(
+                  sizeFactor: animation,
+                  child: _buildItem(names[index], index),  
+                );
               },
             ),
           ),
